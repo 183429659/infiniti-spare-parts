@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Infiniti Spare Parts</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    .product-card img {
+      max-height: 200px;
+      object-fit: contain;
+    }
+  </style>
+</head>
+<body class="font-sans">
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect } = React;
+
+    const API_BASE = 'http://localhost:3000'; // Change to your deployed backend URL for hosting
+    const pathname = window.location.pathname;
+
+    // ProductCard Component
+    function ProductCard({ product }) {
+      return (
+        <div className="bg-white p-4 rounded-lg shadow-md hover:shadow-lg transition-shadow">
+          <img src={`${API_BASE}/uploads/${product.images[0] || 'placeholder.jpg'}`} alt={product.name} className="w-full product-card" />
+          <h3 className="text-xl font-semibold mt-2">{product.name}</h3>
+          <p className="text-gray-600">${product.price}</p>
+          <p className="text-sm text-gray-500">Stock: {product.stock}</p>
+          <p className="text-sm text-gray-500">Category: {product.category}</p>
+        </div>
+      );
+    }
+
+    // Products Component
+    function Products() {
+      const [products, setProducts] = useState([]);
+      const [loading, setLoading] = useState(true);
+
+      useEffect(() => {
+        fetch(`${API_BASE}/api/products`)
+          .then(response => response.json())
+          .then(data => {
+            setProducts(data);
+            setLoading(false);
+          })
+          .catch(error => {
+            console.error('Error fetching products:', error);
+            setLoading(false);
+          });
+      }, []);
+
+      if (loading) return <div className="text-center py-10">Loading products...</div>;
+      return (
+        <section id="products" className="py-16 bg-gray-100">
+          <div className="container mx-auto">
+            <h2 className="text-3xl font-bold text-center mb-8">
+              Our Products
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {products.map((product) => (
+                <ProductCard key={product.id} product={product} />
+              ))}
+            </div>
+          </div>
+        </section>
+      );
+    }
+
+    // Hero Banner Component
+    function Hero() {
+      return (
+        <section id="home" className="bg-gray-900 text-white py-16">
+          <div className="container mx-auto text-center">
+            <img src="https://placehold.co/800x400?text=Free+Shipping+on+Orders+Over+$200" alt="Banner" className="mx-auto mb-4" />
+            <h2 className="text-4xl font-bold mb-4" style={{ fontFamily: 'Roboto' }}>
+              Premium Infiniti Spare Parts
+            </h2>
+            <p className="text-lg mb-6" style={{ fontFamily: 'Roboto' }}>
+              Genuine OEM and carbon fiber components for your Infiniti vehicle.
+            </p>
+          </div>
+        </section>
+      );
+    }
+
+    // FAQ Component
+    function FAQ() {
+      return (
+        <section id="faq" className="py-16">
+          <div className="container mx-auto">
+            <h2 className="text-3xl font-bold text-center mb-8" style={{ fontFamily: 'Roboto' }}>
+              Frequently Asked Questions
+            </h2>
+            <div className="max-w-2xl mx-auto">
+              <div className="mb-4">
+                <h3 className="text-xl font-semibold">What models are compatible with your parts?</h3>
+                <p className="text-gray-700">Our parts are compatible with Infiniti models like Q60/Q50 (2014-2020), G35/37(2010-2023), etc.</p>
+              </div>
+              {/* Add more FAQs if needed */}
+            </div>
+          </div>
+        </section>
+      );
+    }
+
+    // Contact Component
+    function Contact() {
+      return (
+        <section id="contact" className="py-16 bg-gray-100">
+          <div className="container mx-auto">
+            <h2 className="text-3xl font-bold text-center mb-8" style={{ fontFamily: 'Roboto' }}>
+              Contact Us
+            </h2>
+            <p className="text-lg text-gray-700 text-center">Email: <a href="mailto:infinitiparts91@gmail.com" className="text-blue-500">infinitiparts91@gmail.com</a></p>
+            <p className="text-lg text-gray-700 text-center">Location: Atlanta GA</p>
+            <p className="text-lg text-gray-700 text-center">Social Media: <a href="https://www.instagram.com/allinfinitiparts?igsh=eWRtYW45a3RzdG9k" className="text-blue-500">Instagram</a></p>
+          </div>
+        </section>
+      );
+    }
+
+    // Payment Preferences Component (in Footer)
+    function Footer() {
+      return (
+        <footer className="bg-gray-800 text-white py-8">
+          <div className="container mx-auto">
+            <h3 className="text-xl font-bold mb-4" style={{ fontFamily: 'Roboto' }}>
+              Payment Preferences
+            </h3>
+            <p className="text-sm">Paypal, CashApp, Apple Pay, Chime, Zelle, Apple Giftcards</p>
+          </div>
+        </footer>
+      );
+    }
+
+    // App Component
+    function App() {
+      const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem('token'));
+
+      const handleLogin = () => setIsLoggedIn(true);
+      const handleLogout = () => {
+        localStorage.removeItem('token');
+        setIsLoggedIn(false);
+      };
+
+      if (pathname === '/admin') {
+        return isLoggedIn ? (
+          <AdminPanel onLogout={handleLogout} />
+        ) : (
+          <LoginForm onLogin={handleLogin} onCancel={() => window.location.href = '/'} />
+        );
+      }
+
+      return (
+        <div>
+          <header className="bg-gray-800 text-white p-4">
+            <h1 className="text-2xl font-bold">Infiniti Spare Parts</h1>
+          </header>
+          <Hero />
+          <Products />
+          <FAQ />
+          <Contact />
+          <Footer />
+        </div>
+      );
+    }
+
+    // Render the App
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+</body>
+</html>
